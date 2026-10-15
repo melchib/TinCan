@@ -13,17 +13,6 @@ export default function App() {
 
   const player = useAudioPlayer(null);
   const status = useAudioPlayerStatus(player);
-
-  useEffect(() => {
-    console.log('Player status:', status);
-  }, [status]);
-  
-    // useEffect(() => {
-    //   if (status.isLoaded && !status.playing && recordingUri) {
-    //     player.play();
-    //   }
-    // }, [status]);
-
   async function startRecording() {
     await AudioModule.requestRecordingPermissionsAsync();
     await AudioModule.setAudioModeAsync({ allowsRecording: true, playsInSilentMode: true });
@@ -37,8 +26,6 @@ export default function App() {
     await recorder.stop();
 
     const src = recorder.uri;
-    console.log('Recording Uri:', src);
-
     if (!src) {
       console.log('No recording URI available');
       return; //t
@@ -47,41 +34,20 @@ export default function App() {
     setRecordingUri(src);
     player.replace({ uri: src });
     setIsRecording(false);
-    // const dest = FileSystem.readAsStringAsync(src, {
-    //   encoding: FileSystem.EncodingType.Base64
-    // });
-
-    // console.log('written to:', dest);
-    // setRecordingUri(dest);
-    // player.replace({ uri: dest});
-    // setIsRecording(false);
     
   }
 
   async function  playRecording() {
-    console.log('Play button presed')
-    console.log('Recording URI:', recordingUri);
-
     if(!recordingUri) {
       console.log('No recording to play');
       return;
     }
-
-    // const info = await FileSystem.getInfoAsync(recordingUri);
-    // console.log('File info:', info);
-
-    // if (!info.exists) {
-    //   console.log('recording file does not exist');
-    //   return;
-    // }
-
     await AudioModule.setAudioModeAsync({ 
       allowsRecording: false, 
       playsInSilentMode: true 
     });
 
     player.replace({ uri: recordingUri });
-    console.log('player source replaced');
 
     player.play();    
   }
