@@ -9,9 +9,12 @@ import { auth } from "./firebaseConfig";
 import { signInAnonymously } from 'firebase/auth';
 
 
+
+
 export default function App() {
   const [recordingUri, setRecordingUri] = useState(null);
   const [isRecording, setIsRecording] = useState(false);
+  const [playingMessageID, setPlayingMessageID] = useState(false);
   const [duration, setDuration] = useState(0);
   const [messages, setMessages] = useState([]);
 
@@ -57,7 +60,8 @@ export default function App() {
     
   }
 
-  async function  playRecording() {
+  async function  playRecording(recordingUri, messageID) {
+    setPlayingMessageID(messageID);
     if(!recordingUri) {
       console.log('No recording to play');
       return;
@@ -69,7 +73,8 @@ export default function App() {
 
     player.replace({ uri: recordingUri });
 
-    player.play();    
+    player.play();   
+    setPlayingMessageID(null)
   }
 
 async function createUser() {
@@ -171,6 +176,11 @@ async function loadMessages() {
     loadMessages();
   }, []);
 
+  // useEffect(() => {
+  //   if (status.didJustFinish) {
+  //     setIsPlaying(false);
+  //   }
+  // }, [status.didJustFinish]);
 
   return (
   <View style={styles.container}>
@@ -191,7 +201,7 @@ async function loadMessages() {
       <View style={styles.buttonRow}>
         <TouchableOpacity
           style={[styles.bottomButtons]}
-          onPress={playRecording}
+          onPress={() => playRecording(recordingUri)}
         >
           <Text style={styles.buttonText}>Play</Text>
         </TouchableOpacity>
@@ -206,15 +216,29 @@ async function loadMessages() {
     )}
     </View>
     
+    {/* Saved memos list */}
     <View style={styles.playbackArea}>
       <Text style={styles.headerText}>Memos</Text>
 
       <FlatList
+        style={styles.flatList}
         data={messages}
         keyExtractor={(item) => item.id}
+        extraData={playingMessageID}
         renderItem={({ item }) => (
-          <View>
-            <Text style = {styles.messagesBubble}>{item.dateSent} {item.timeSent} {item.duration}s</Text>
+          <View style = {styles.messagesBubble}>
+            <View style={styles.playButtonBg}>
+              <TouchableOpacity 
+                style={playingMessageID === item.id 
+                  ? styles.pauseIcon 
+                  : styles.playIcon}
+                onPress={() => playRecording(item.audioURL, item.messageID)}
+                >
+                
+              </TouchableOpacity>
+
+            </View>
+            <Text> {item.dateSent} {item.timeSent} {item.duration}s</Text>
           </View>
         )}
         />
@@ -226,12 +250,13 @@ async function loadMessages() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: 'pink',
     justifyContent: 'center',
     alignItems: 'center',
     gap: 20,
   },
   recordingSection: {
-    backgroundColor: '#000000',
+    backgroundColor: 'white',
     paddingHorizontal: 50,
     paddingVertical: 30,
     borderRadius: 40,
@@ -269,6 +294,8 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 430,
     left: 20,
+    right: 20,
+    bottom: 0
   },
   headerText: {
     fontFamily: 'Arial',
@@ -281,5 +308,39 @@ const styles = StyleSheet.create({
     width: 325,
     borderRadius: 10,
     margin: 5,
-  }
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    gap: 10,
+  },
+  playButtonBg: {
+    backgroundColor: 'white',
+    width: 45,
+    height: 45,
+    borderRadius: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+playIcon: {
+    width: 0,
+    height: 0,
+    borderTopWidth: 10,
+    borderBottomWidth: 10,
+    borderLeftWidth: 16,
+    borderTopColor: 'transparent',
+    borderBottomColor: 'transparent',
+    borderLeftColor: 'black',
+    borderRightWidth: 0,
+    marginLeft: 3,
+  },
+  
+  pauseIcon: {
+    height: 20,
+    width: 20,
+    borderRadius: 3,
+    backgroundColor: 'black'
+  },
+  flatList: {
+    flex: 1 
+  },
 });
