@@ -1,12 +1,15 @@
 import { useState, useEffect } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View, FlatList } from 'react-native';
 import { useAudioRecorder, AudioModule, RecordingPresets, useAudioPlayer, useAudioPlayerStatus } from 'expo-audio';
-import { collection, doc, setDoc, getDoc, getDocs, query, where, orderBy, serverTimestamp } from "firebase/firestore";
-import { db } from "./firebaseConfig";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { storage } from './firebaseConfig';
-import { auth } from "./firebaseConfig";
-import { signInAnonymously } from 'firebase/auth';
+// import { collection, doc, setDoc, getDoc, getDocs, query, where, orderBy, serverTimestamp } from "firebase/firestore";
+// import { db } from "./firebaseConfig";
+// import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+// import { storage } from './firebaseConfig';
+// import { auth } from "./firebaseConfig";
+// import { signInAnonymously } from 'firebase/auth';
+// import { background } from '@expo/ui/swift-ui/modifiers';
+import { createUser } from './services/userService';
+import { writeMessage,loadMessages, } from './services/messageService';
 
 
 
@@ -14,7 +17,7 @@ import { signInAnonymously } from 'firebase/auth';
 export default function App() {
   const [recordingUri, setRecordingUri] = useState(null);
   const [isRecording, setIsRecording] = useState(false);
-  const [playingMessageID, setPlayingMessageID] = useState(false);
+  const [playingMessageID, setPlayingMessageID] = useState(null);
   const [duration, setDuration] = useState(0);
   const [messages, setMessages] = useState([]);
 
@@ -27,7 +30,7 @@ export default function App() {
   });
 
   const player = useAudioPlayer(null);
-  const status = useAudioPlayerStatus(player);
+  // const status = useAudioPlayerStatus(player);
   
   async function startRecording() {
     await AudioModule.requestRecordingPermissionsAsync();
@@ -45,7 +48,7 @@ export default function App() {
     console.log("Recording duration:", duration);
     setDuration(duration);
     
-    const recordingStatus = recorder.getStatus();
+    // const recordingStatus = recorder.getStatus();
 
     const src = recorder.uri;
     if (!src) {
@@ -74,113 +77,34 @@ export default function App() {
     player.replace({ uri: recordingUri });
 
     player.play();   
-    setPlayingMessageID(null)
+    // setPlayingMessageID(null)
   }
 
-async function createUser() {
-  if (!auth.currentUser) {
-    await signInAnonymously(auth);
+  async function refreshMessages() {
+    try {
+      const messageList = await loadMessages(groupID);
+      setMessages(messageList);
+    }
+    catch (error) {
+      console.error('Error loading messages:', error)
+    }
   }
-
-  const user = auth.currentUser;
-
-  if (!user) {
-    throw new Error("User authentication failed");
-  }
-
-  const userRef = doc(db, "users", user.uid);
-  const userSnapshot = await getDoc(userRef);
-
-  if (!userSnapshot.exists()) {
-    await setDoc(userRef, {
-      createdAt: new Date(),
-      displayName: "Test User",
-    });
-  }
-
-  return user.uid;
-}
-
-
-
-
-  async function writeMessage(recordingUri, groupID, duration) {
-    
-    const senderID = await createUser();
-
-    const time = new Date();
-    const timeSent = time.toLocaleTimeString();
-
-    const dateSent = time.toLocaleDateString();
-    
-    const messageRef = doc(collection(db, "messages")) ;
-    const messageID = messageRef.id;
-    
-    const storagePath = `voice-messages/${groupID}/${messageID}.m4a`;
-    const audioRef = ref(storage, storagePath);
-
-    const response = await fetch(recordingUri);
-    const blob = await response.blob();
-    
-    await uploadBytes(audioRef, blob, {
-      contentType: "audio/mp4",
-    });
-    
-    const audioURL = await getDownloadURL(audioRef);
-
-    console.log("audio uploaded, about to write to firestore...");
-    console.log("Document path:", messageRef.path);
-
-    try{
-    await setDoc(messageRef, {
-      audioURL: audioURL,
-      duration: duration,
-      groupID: groupID,
-      senderID: senderID,
-      timeSent: timeSent,
-      dateSent: dateSent,
-      createdAt: serverTimestamp()
-    });
-
-    console.log("firestore write successful");
-    await loadMessages();
-  } catch(error) {
-    console.error("Firestore error:", error.code, error.message);
-  }
-}
-
-async function loadMessages() {
-  try {
-    await createUser();
-
-    const messageQuery = query(
-    collection(db, 'messages'),
-    where('groupID', '==', groupID),
-    orderBy('createdAt', 'desc')
-  );
-
-  const snapshot = await getDocs(messageQuery);
-
-  const messageList = snapshot.docs.map((document) => ({
-    id: document.id,
-    ...document.data()
-  }));
-
-  setMessages(messageList);
-} catch (error) {
-  console.error('Error loading messages:', error.code, error.message)
-}
-}
-
   useEffect(() => {
-    loadMessages();
-  }, []);
+  refreshMessages();
+}, []);
 
-  // useEffect(() => {
-  //   if (status.didJustFinish) {
-  //     setIsPlaying(false);
-  //   }
-  // }, [status.didJustFinish]);
+  async function sendMessage() {
+    try {
+      await writeMessage(recordingUri, groupID, duration);
+      await refreshMessages(); 
+
+      setRecordingUri(null);
+      setDuration(0);
+      } catch (error) {
+        console.error('Error sending message:', error);
+      }
+    }
+
 
   return (
   <View style={styles.container}>
@@ -208,16 +132,17 @@ async function loadMessages() {
 
         <TouchableOpacity
           style={[styles.bottomButtons]}
-          onPress={() => writeMessage(recordingUri, groupID, duration)}
+          onPress={sendMessage}
         >
           <Text style={styles.buttonText}>Send</Text>
         </TouchableOpacity>
+      
       </View>
     )}
     </View>
     
     {/* Saved memos list */}
-    <View style={styles.playbackArea}>
+      <View style={styles.playbackArea}>
       <Text style={styles.headerText}>Memos</Text>
 
       <FlatList
@@ -225,7 +150,7 @@ async function loadMessages() {
         data={messages}
         keyExtractor={(item) => item.id}
         extraData={playingMessageID}
-        renderItem={({ item }) => (
+        renderItem={({ item }) => ( 
           <View style = {styles.messagesBubble}>
             <View style={styles.playButtonBg}>
               <TouchableOpacity 
@@ -238,12 +163,13 @@ async function loadMessages() {
               </TouchableOpacity>
 
             </View>
-            <Text> {item.dateSent} {item.timeSent} {item.duration}s</Text>
+            <Text > {item.dateSent} {item.timeSent} {item.duration}s</Text>
           </View>
         )}
         />
-    </View>
-  </View>
+        </View>
+      </View>
+
 );
 }
 
@@ -300,9 +226,10 @@ const styles = StyleSheet.create({
   headerText: {
     fontFamily: 'Arial',
     fontSize: 30,
+    fontWeight: 'bold'
   },
   messagesBubble: {
-    backgroundColor: 'gray',
+    backgroundColor: 'tomato',
     color: 'white',
     padding: 15,
     width: 325,
@@ -343,4 +270,7 @@ playIcon: {
   flatList: {
     flex: 1 
   },
-});
+  memoContainer: {
+    backgroundColor: 'blue'
+  }
+})
