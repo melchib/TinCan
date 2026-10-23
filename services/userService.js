@@ -1,6 +1,6 @@
 
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
-import { signInAnonymously } from 'firebase/auth';
+import { createUserWithEmailAndPassword, signInAnonymously, signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import { db, auth } from '../firebaseConfig';
 
 export async function createUser() {
@@ -9,6 +9,7 @@ export async function createUser() {
   }
 
   const user = auth.currentUser;
+  console.log("Current user UIS:", user?.uid);
 
   if (!user) {
     throw new Error("User authentication failed");
@@ -25,4 +26,20 @@ export async function createUser() {
   }
 
   return user.uid;
+}
+export async function signUp(email, password) {
+  const result = await createUserWithEmailAndPassword(
+    auth, email, password
+  );
+  return result.user;
+}
+
+export async function signIn(email, password) {
+  const result = await signInWithEmailAndPassword(
+    auth, email, password
+  );
+  return result.user;
+}
+export async function logOut() {
+  await signOut(auth);
 }
