@@ -34,8 +34,9 @@ export default function LandingScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ffe476',
+    backgroundColor: '#fdf9fe',
     alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: 32,
     paddingTop: 140,
     paddingBottom: 50,
@@ -58,7 +59,7 @@ const styles = StyleSheet.create({
   buttonSection: {
     width: '100%',
     gap: 18,
-    
+    bottom: 270
   },
 
   button: {
@@ -75,5 +76,8 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#f68e2c',
   },
-  
+  spotlight: {
+    color: 'white',
+    
+  }
 });
