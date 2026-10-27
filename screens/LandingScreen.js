@@ -2,7 +2,7 @@
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import { Image, ImageBackground } from 'react-native';
 
-export default function LandingScreen() {
+export default function LandingScreen({ navigation }) {
   return (
     <View style={styles.container}>
         
@@ -17,11 +17,17 @@ export default function LandingScreen() {
 
       {/* Buttons */}
       <View style={styles.buttonSection}>
-        <TouchableOpacity style={styles.button}>
+        <TouchableOpacity 
+        style={styles.button} 
+        onPress={() => navigation.navigate('SignIn')}
+        >
           <Text style={styles.buttonText}>Sign In</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.button}>
+        <TouchableOpacity 
+        style={styles.button}
+        onPress={() => navigation.navigate('CreateAccount')}
+        >
           <Text style={styles.buttonText}>Create Account</Text>
         </TouchableOpacity>
         </View>

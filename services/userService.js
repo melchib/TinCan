@@ -27,18 +27,25 @@ export async function createUser() {
 
   return user.uid;
 }
-export async function signUp(email, password) {
-  const result = await createUserWithEmailAndPassword(
-    auth, email, password
+export async function signUp(displayName, email, password) {
+  const userCredential = await createUserWithEmailAndPassword(
+    auth, email.trim(), password
   );
-  return result.user;
+  const user = userCredential.user;
+
+  await setDoc(doc(db, 'users', user.uid), {
+    email: user.email,
+    displayName: displayName.trim(),
+    createdAt: serverTimestamp(),
+  });
+  return user;
 }
 
 export async function signIn(email, password) {
-  const result = await signInWithEmailAndPassword(
-    auth, email, password
+  const userCredential = await signInWithEmailAndPassword(
+    auth, email.trim(), password
   );
-  return result.user;
+  return userCredential.user;
 }
 export async function logOut() {
   await signOut(auth);
