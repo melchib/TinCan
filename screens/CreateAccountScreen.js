@@ -5,7 +5,7 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  StyleSheet,
+  StyleSheet, Image
 } from 'react-native';
 import { signUp } from '../services/userService';
 
@@ -64,7 +64,15 @@ export default function CreateAccountScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Create Account</Text>
+       <View style={styles.logoSection}>
+                  <Image 
+                    source={require('../icons/tincanlogo.png')}
+                    style={{ left: 15, top:-40, width: 250, height: 250 }}
+                    resizeMode="contain"
+                    />
+                </View>
+
+
         
     <TextInput
         style={styles.input}
@@ -197,5 +205,10 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 22,
     color: '#8a5010',
+  },
+  logoSection: {
+    top: -50,
+    alignItems: 'center',
+    bottom: -20
   },
 });
