@@ -34,6 +34,7 @@ import { createUser } from './userService';
     console.log("audio uploaded, about to write to firestore...");
     console.log("Document path:", messageRef.path);
 
+
     try{
     await setDoc(messageRef, {
       audioURL: audioURL,
