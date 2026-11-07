@@ -1,6 +1,6 @@
 
 import { db } from '../firebaseConfig';
-import { doc, getDoc, query, collection, where, getDocs } from 'firebase/firestore';
+import { doc, getDoc, query, collection, where, getDocs, setDoc } from 'firebase/firestore';
 import { auth } from '../firebaseConfig';
 
 export async function getUserGroups(userID){
@@ -24,4 +24,41 @@ export async function getUserGroups(userID){
     }));
 
     return groups;
+}
+
+export async function writeNewGroup(currentUser, groupName, inviteCode){
+    const time = new Date();
+    const dateCreated = time.toLocaleDateString();
+
+    const groupRef = doc(collection(db, "Groups"));
+    const groupID = groupRef.id;
+
+
+
+    try{
+        await setDoc( groupRef, {
+            createdBy: currentUser,
+            groupName: groupName,
+            dateCreated: dateCreated,
+            inviteCode: inviteCode,
+            members: [currentUser],
+        });
+        console.log("group creation successful");
+
+        return groupID
+    } catch(error) {
+        console.error("Firestore error:", error.code, error.message);
+    }
+}
+
+export  function generateInviteCode() {
+    const array = ['A','B','C','D','E','F','G','H','J','K','L','M','N','P',
+        'Q','R','S','T','U','V','W','X','Y','Z',2,3,4,5,6,7,8,9];
+    let inviteCode = '';
+    for (let i=0; i < 7; i++){
+        const random = Math.floor(Math.random() * array.length);
+        inviteCode += array[random];
+    }
+    console.log(inviteCode)
+    return inviteCode;
 }

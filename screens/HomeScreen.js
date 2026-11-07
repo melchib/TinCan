@@ -52,7 +52,17 @@ export default function HomeScreen({ navigation }) {
                     resizeMode="contain"
                 />
                 <View style={styles.spotlight}>
-                    <Text style={styles.title}>My Groups</Text>
+                    <View style={styles.headerBar}>
+                        <Text style={styles.title}>My Groups</Text>
+                        <TouchableOpacity style={styles.addButton}>
+                            <Text onPress={() => navigation.navigate('CreateGroup')}
+                            style={{
+                                fontSize: 32, 
+                                justifyContent: 'center', 
+                                left: 12, 
+                                color: '#743f43'}}>+</Text>
+                        </TouchableOpacity>
+                    </View>
                     <FlatList 
                         style={styles.FlatList}
                         data={groups}
@@ -80,7 +90,18 @@ const styles = StyleSheet.create({
     container: {
     flex: 1,
     alignItems: 'center',
-
+  },
+  headerBar: {
+    flexDirection: 'row',
+    justifyContent: 'space-between'
+  },
+  addButton: {
+    backgroundColor: 'white',
+    width: 45,
+    height: 45,
+    borderRadius: 25,
+    top: 20,
+    right: 25,
   },
   logoSection: {
     top: 40,
