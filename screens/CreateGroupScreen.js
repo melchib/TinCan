@@ -5,15 +5,22 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Alert } from 'react-native';
 import { getAuth, onAuthStateChanged, setPersistence } from 'firebase/auth';
 import { generateInviteCode, writeNewGroup } from '../services/groupService';
+import * as Clipboard from 'expo-clipboard';
 
 export default function CreateGroupScreen( {navigation} ) {
     const [groupName, setGroupName] = useState("");
     const [isPresented, setIsPresented] = useState(false);
     const [inviteCode, setInviteCode] = useState("");
+    // const [copiedText, setCopiedText] = useState("");
+    
     const isInputEmpty = groupName.trim().length === 0;
-
     const auth = getAuth();
     const userID = auth.currentUser?.uid;
+    const copyToClipboard = async () => {
+      await Clipboard.setStringAsync(inviteCode);
+      Alert.alert("Copied!", "Invite code copied to clipboard");
+    }
+
 
     async function handleGroupCreate() {
       try{
@@ -73,7 +80,7 @@ export default function CreateGroupScreen( {navigation} ) {
                 autoCapitalize='none'
                 editable={!isPresented}
               />
-
+            <View style={styles.buttonRow}>
               <TouchableOpacity 
                 style={[styles.button, isInputEmpty && styles.disabledButton]}
                 onPress={confirmCreation}
@@ -81,7 +88,10 @@ export default function CreateGroupScreen( {navigation} ) {
               >
                 <Text style={[{color: 'white'}, isInputEmpty && {color:'#696666'}]}>Create Group</Text>
               </TouchableOpacity>
-
+            <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Inbox')}>
+                    <Text>Back</Text>
+                  </TouchableOpacity>
+            </View>
           </View>
 
               {isPresented && (
@@ -92,6 +102,15 @@ export default function CreateGroupScreen( {navigation} ) {
                   <Text style={styles.inviteCodeText}>
                     {inviteCode}
                   </Text>
+                  <Text style={styles.subtitle}>Send this code to your friends and have them enter the code to join your group</Text>
+                  <View style={styles.buttonRow}>
+                  <TouchableOpacity style={styles.button} onPress={copyToClipboard}>
+                    <Text>Copy code</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Inbox')}>
+                    <Text>Back</Text>
+                  </TouchableOpacity>
+                  </View>
                 </View>
               )}
             </View>
@@ -148,36 +167,50 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     top: 40,
     paddingHorizontal: 16,
-    marginBottom: 18,
+    marginBottom: 55,
     backgroundColor: '#FFFFFF',
     fontSize: 16,
   },
     button: {
     borderRadius: 28,
     paddingVertical: 15,
-    paddingHorizontal: 15,
+    paddingHorizontal: 20,
     alignItems: 'center',
     backgroundColor: '#ec6b6b',
-    top: 40,
+    top: 0,
     marginTop: 6
   },
   disabledButton: {
     backgroundColor: '#e0e0e0'
   },
   inviteCodeContainer: {
-    marginTop: 55,
+    marginTop: -90,
     alignItems: 'center',
+    backgroundColor: '#fbb689',
+    padding: 30,
+    borderRadius: 35,
+    width: '90%',
 },
 inviteCodeLabel: {
     marginTop: -0,
     fontSize: 30,
     fontWeight: 'bold',
     color: '#743f43',
+    marginBottom: 6
 },
 inviteCodeText: {
     fontSize: 30,
     fontWeight: 'bold',
     color: '#c31919',
-
+    marginBottom: 6
 },
+subtitle: {
+  fontFamily: 'Inter',
+  fontSize: 15,
+  textAlign: 'center',
+},
+buttonRow: {
+  flexDirection:'row',
+  gap:10
+}
 });

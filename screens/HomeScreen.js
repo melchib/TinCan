@@ -5,6 +5,8 @@ import { FlatList } from 'react-native';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '../firebaseConfig';
 import { getUserGroups } from '../services/groupService';
+import { useFocusEffect } from '@react-navigation/native';
+import { useCallback } from 'react';
 
 
 export default function HomeScreen({ navigation }) {
@@ -12,6 +14,24 @@ export default function HomeScreen({ navigation }) {
     const [isLoading, setIsLoading] = useState(true);
     const [errorMessage, setErrorMessage] = useState('');
 
+    useFocusEffect(
+        useCallback(() => {
+            async function refreshGroups() {
+                const user = auth.currentUser;
+
+                if (!user) return;
+                
+                try {
+                    const userGroups = await getUserGroups(user.uid);
+                    setGroups(userGroups);
+                } catch (error) {
+                    console.log("Error refreshing groups:", error);
+                }
+            }
+
+            refreshGroups();
+        }, [])
+    )
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, async (user) => {
             if (!user){
