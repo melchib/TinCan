@@ -6,12 +6,14 @@ import LandingScreen from "./screens/LandingScreen";
 import SignInScreen from "./screens/SignInScreen";
 import CreateAccountScreen from "./screens/CreateAccountScreen";
 import HomeScreen from "./screens/HomeScreen";
+import JoinGroupScreen from "./screens/JoinGroupScreen";
+
 
 const Stack = createNativeStackNavigator();
 
 export default function App() {
   return (
-  //   <CreateGroupScreen/>
+  //   <JoinGroupScreen/>
   // );
     <NavigationContainer>
       <Stack.Navigator
@@ -21,8 +23,9 @@ export default function App() {
         <Stack.Screen name="Landing" component={LandingScreen} />
         <Stack.Screen name="SignIn" component={SignInScreen} />
         <Stack.Screen name="CreateAccount" component={CreateAccountScreen} />
-        <Stack.Screen name="Inbox" component={HomeScreen} />
+        <Stack.Screen name="HomeScreen" component={HomeScreen} />
         <Stack.Screen name="CreateGroup" component={CreateGroupScreen} />
+        <Stack.Screen name="JoinGroup" component={JoinGroupScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

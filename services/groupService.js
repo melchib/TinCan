@@ -1,6 +1,6 @@
 
 import { db } from '../firebaseConfig';
-import { doc, getDoc, query, collection, where, getDocs, setDoc } from 'firebase/firestore';
+import { doc, getDoc, query, collection, where, getDocs, setDoc, updateDoc, arrayUnion } from 'firebase/firestore';
 import { auth } from '../firebaseConfig';
 
 export async function getUserGroups(userID){
@@ -49,6 +49,36 @@ export async function writeNewGroup(currentUser, groupName, inviteCode){
     } catch(error) {
         console.error("Firestore error:", error.code, error.message);
     }
+}
+
+export async function joinGroup(joinCode) {
+    const  q = query(
+        collection(db, "Groups"),
+        where("inviteCode", "==", joinCode.trim().toUpperCase())
+    );
+
+    const snapshot = await getDocs(q);
+    
+    if (snapshot.empty){
+        return "invalidCode";
+    }
+
+    const groupDoc = snapshot.docs[0];
+    const groupID = groupDoc.id;
+
+    const groupData = groupDoc.data();
+    const currentUser = auth.currentUser.uid;
+
+    if (groupData.members.includes(currentUser)){
+        return "alreadyMember";
+    }
+
+    const groupRef = doc(db, "Groups", groupID);
+
+    await updateDoc(groupRef, {
+        members: arrayUnion(currentUser)
+    });
+    return "success";
 }
 
 export  function generateInviteCode() {

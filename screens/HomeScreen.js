@@ -13,6 +13,7 @@ export default function HomeScreen({ navigation }) {
     const [groups, setGroups] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [errorMessage, setErrorMessage] = useState('');
+    const [isVisible, setIsVisible] = useState(false);
 
     useFocusEffect(
         useCallback(() => {
@@ -32,6 +33,14 @@ export default function HomeScreen({ navigation }) {
             refreshGroups();
         }, [])
     )
+
+    function handleAddButtonPress(){
+        if (isVisible) { 
+            setIsVisible(false);
+        } else {
+            setIsVisible(true);
+        }
+    }
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, async (user) => {
             if (!user){
@@ -71,18 +80,37 @@ export default function HomeScreen({ navigation }) {
                     style={{ left: 15, top:-40, width: 250, height: 250 }}
                     resizeMode="contain"
                 />
-                <View style={styles.spotlight}>
+
+                    <View style={styles.spotlight}>
+
+                    {/* Header text */}
                     <View style={styles.headerBar}>
                         <Text style={styles.title}>My Groups</Text>
-                        <TouchableOpacity style={styles.addButton}>
-                            <Text onPress={() => navigation.navigate('CreateGroup')}
-                            style={{
-                                fontSize: 32, 
-                                justifyContent: 'center', 
-                                left: 12, 
-                                color: '#743f43'}}>+</Text>
-                        </TouchableOpacity>
                     </View>
+
+                    {/* Dropdown menu */}
+                    {isVisible && (
+                        <View style={styles.addButtonMenu}>
+                            <TouchableOpacity style={styles.menuButtons}
+                            onPress={() => navigation.navigate('CreateGroup')}>
+                                <Text style={styles.btnText}>Create Group</Text>
+                            </TouchableOpacity>
+
+                            <TouchableOpacity style={styles.menuButtons}
+                            onPress={() => navigation.navigate('JoinGroup')}>
+                                <Text style={styles.btnText}>Join group via code</Text>
+                            </TouchableOpacity>
+                        </View>
+                    )}
+
+                    {/* Add button */}
+                    <TouchableOpacity
+                        style={styles.addButton}
+                        onPress={handleAddButtonPress}
+                    >
+                        <Text style={{ fontSize: 32, color: '#743f43' }}>+</Text>
+                    </TouchableOpacity>
+
                     <FlatList 
                         style={styles.FlatList}
                         data={groups}
@@ -112,16 +140,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   headerBar: {
-    flexDirection: 'row',
-    justifyContent: 'space-between'
+    // flexDirection: 'row',
+    // justifyContent: 'space-between',
+    zIndex: 100,
   },
   addButton: {
+    position: 'absolute',
+    top: 20,
+    right: 25,
     backgroundColor: 'white',
     width: 45,
     height: 45,
     borderRadius: 25,
-    top: 20,
-    right: 25,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 300,
   },
   logoSection: {
     top: 40,
@@ -178,4 +211,30 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginTop: 10,
 },
+
+addButtonMenu: {
+    position: 'absolute',
+    top: 1,
+    right: 1,
+    width: 300,
+    backgroundColor: '#ffd34f',
+    borderRadius: 35,
+    padding: 30,
+    paddingBottom: 65,
+    zIndex: 200,
+},
+menuButtons: {
+    borderRadius: 28,
+    paddingVertical: 19,
+    paddingHorizontal: 20,
+    alignItems: 'center',
+    backgroundColor: '#ec6b6b',
+    top: 34,
+    marginTop: 10,
+},
+btnText: {
+    color:'white',
+    fontWeight:'bold',
+    fontSize: 15
+}
 });

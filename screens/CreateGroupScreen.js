@@ -11,7 +11,6 @@ export default function CreateGroupScreen( {navigation} ) {
     const [groupName, setGroupName] = useState("");
     const [isPresented, setIsPresented] = useState(false);
     const [inviteCode, setInviteCode] = useState("");
-    // const [copiedText, setCopiedText] = useState("");
     
     const isInputEmpty = groupName.trim().length === 0;
     const auth = getAuth();
@@ -88,7 +87,7 @@ export default function CreateGroupScreen( {navigation} ) {
               >
                 <Text style={[{color: 'white'}, isInputEmpty && {color:'#696666'}]}>Create Group</Text>
               </TouchableOpacity>
-            <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Inbox')}>
+            <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('HomeScreen')}>
                     <Text>Back</Text>
                   </TouchableOpacity>
             </View>
@@ -107,7 +106,7 @@ export default function CreateGroupScreen( {navigation} ) {
                   <TouchableOpacity style={styles.button} onPress={copyToClipboard}>
                     <Text>Copy code</Text>
                   </TouchableOpacity>
-                  <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Inbox')}>
+                  <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('HomeScreen')}>
                     <Text>Back</Text>
                   </TouchableOpacity>
                   </View>
