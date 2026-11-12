@@ -8,6 +8,7 @@ import CreateAccountScreen from "./screens/CreateAccountScreen";
 import HomeScreen from "./screens/HomeScreen";
 import JoinGroupScreen from "./screens/JoinGroupScreen";
 import GroupInboxScreen from "./screens/GroupInboxScreen";
+import RecordMemoScreen from "./screens/RecordMemoScreen";
 
 
 const Stack = createNativeStackNavigator();
@@ -30,6 +31,7 @@ export default function App() {
         <Stack.Screen name="JoinGroup" component={JoinGroupScreen} />
         <Stack.Screen name="GroupInbox" component={GroupInboxScreen} />
         <Stack.Screen name="TestScreen" component={TestScreen} />
+        <Stack.Screen name="RecordScreen" component={RecordMemoScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

@@ -121,7 +121,7 @@ export default function HomeScreen({ navigation }) {
                             onPress={() => navigation.navigate("GroupInbox", {
                                 groupID: item.id,
                                 groupName: item.groupName,
-                                members: item.members.displayName
+                                groupMembers: item.members.displayName
                             })}
                             >
                                 <View style={styles.groupBubble}>

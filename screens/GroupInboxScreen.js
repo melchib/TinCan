@@ -67,7 +67,11 @@ export default function GroupInboxScreen({ navigation, route }) {
             />
             <View style={styles.addButton}>
                 <TouchableOpacity
-                    onPress={() => navigation.navigate('TestScreen')}>
+                    onPress={() => navigation.navigate("RecordScreen", {
+                        groupID,
+                        groupName,
+                        groupMembers
+                    })}>
                     <Text style={{fontSize: 40}}>
                         +
                     </Text>
