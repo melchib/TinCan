@@ -54,13 +54,13 @@ export default function HomeScreen({ navigation }) {
 
                 const userGroups = await getUserGroups(user.uid);
 
-                console.log('Logged-in UID:', user.uid);
-                console.log('Groups returned from Firebase:', userGroups);
+                // console.log('Logged-in UID:', user.uid);
+                // console.log('Groups returned from Firebase:', userGroups);
 
                 setGroups(userGroups);
             } catch (error) {
-                console.log('Groups error code:', error.code);
-                console.log('Groups error message:', error.message);
+                // console.log('Groups error code:', error.code);
+                // console.log('Groups error message:', error.message);
             } finally {
                 setIsLoading(false);
             }
@@ -117,11 +117,19 @@ export default function HomeScreen({ navigation }) {
                         keyExtractor={(item) => item.id}
                         contentContainerStyle={styles.groupListContent}
                         renderItem={({ item }) => (
-                            <View style={styles.groupBubble}>
-                                <Text style={styles.groupName}>
-                                    {item.groupName}
-                                </Text>
-                            </View>
+                            <TouchableOpacity 
+                            onPress={() => navigation.navigate("GroupInbox", {
+                                groupID: item.id,
+                                groupName: item.groupName,
+                                members: item.members.displayName
+                            })}
+                            >
+                                <View style={styles.groupBubble}>
+                                    <Text style={styles.groupName}>
+                                        {item.groupName}
+                                    </Text>
+                                </View>
+                            </TouchableOpacity>
                             )}
                             ListEmptyComponent={
                                 <Text style={styles.emptyText}>

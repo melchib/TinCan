@@ -7,25 +7,29 @@ import SignInScreen from "./screens/SignInScreen";
 import CreateAccountScreen from "./screens/CreateAccountScreen";
 import HomeScreen from "./screens/HomeScreen";
 import JoinGroupScreen from "./screens/JoinGroupScreen";
+import GroupInboxScreen from "./screens/GroupInboxScreen";
 
 
 const Stack = createNativeStackNavigator();
 
 export default function App() {
   return (
-  //   <JoinGroupScreen/>
+    // <TestScreen/>
   // );
     <NavigationContainer>
       <Stack.Navigator
         initialRouteName="Landing"
         screenOptions={{ headerShown: false }}
       >
+  
         <Stack.Screen name="Landing" component={LandingScreen} />
         <Stack.Screen name="SignIn" component={SignInScreen} />
         <Stack.Screen name="CreateAccount" component={CreateAccountScreen} />
         <Stack.Screen name="HomeScreen" component={HomeScreen} />
         <Stack.Screen name="CreateGroup" component={CreateGroupScreen} />
         <Stack.Screen name="JoinGroup" component={JoinGroupScreen} />
+        <Stack.Screen name="GroupInbox" component={GroupInboxScreen} />
+        <Stack.Screen name="TestScreen" component={TestScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

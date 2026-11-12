@@ -132,7 +132,7 @@ export default function TestScreen() {
     </View>
     
     {/* Saved memos list */}
-      <View style={styles.playbackArea}>
+      {/* <View style={styles.playbackArea}>
       <Text style={styles.headerText}>Memos</Text>
 
       <FlatList
@@ -157,7 +157,7 @@ export default function TestScreen() {
           </View>
         )}
         />
-        </View>
+        </View> */}
       </View>
 
 );

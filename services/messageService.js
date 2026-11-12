@@ -1,9 +1,9 @@
 
 import { collection, doc, setDoc, getDocs, query, 
-    where, orderBy, serverTimestamp, } from 'firebase/firestore';
+    where, orderBy, serverTimestamp, getDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL,} from 'firebase/storage';
 import {db, storage } from '../firebaseConfig';
-import { createUser } from './userService';
+import { createUser, getDisplayName } from './userService';
 
   export async function writeMessage(recordingUri, groupID, duration) {
     if (!recordingUri) {
@@ -16,7 +16,7 @@ import { createUser } from './userService';
     const timeSent = time.toLocaleTimeString();
     const dateSent = time.toLocaleDateString();
     
-    const messageRef = doc(collection(db, "messages")) ;
+    const messageRef = doc(collection(db, "Groups", groupID, "messages")) ;
     const messageID = messageRef.id;
     
     const storagePath = `voice-messages/${groupID}/${messageID}.m4a`;
@@ -57,22 +57,29 @@ import { createUser } from './userService';
 
 export async function loadMessages(groupID) {
   try {
-    await createUser();
-
     const messageQuery = query(
-    collection(db, 'messages'),
-    where('groupID', '==', groupID),
+    collection(db, 'Groups', groupID, 'messages'),
     orderBy('createdAt', 'desc')
   );
-
   const snapshot = await getDocs(messageQuery);
 
-  return snapshot.docs.map((document) => ({
-    id: document.id,
-    ...document.data()
-  }));
-} catch (error) {
-  console.error('Error loading messages:', error.code, error.message)
-}
-}
+  const messages = await Promise.all(
+    snapshot.docs.map(async (document) => {
+      const message = document.data();
+      const displayName = await getDisplayName(message.senderID);
 
+  return {
+      id: document.id,
+      ...message,
+      displayName: displayName
+      };
+    })
+  );
+
+  return messages;
+
+  } catch (error) {
+      console.error('Error loading messages:', error.code, error.message);
+      throw error;
+    }
+}

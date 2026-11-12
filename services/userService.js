@@ -34,7 +34,6 @@ export async function signUp(displayName, email, password) {
   const user = userCredential.user;
 
   await setDoc(doc(db, 'users', user.uid), {
-    email: user.email,
     displayName: displayName.trim(),
     createdAt: serverTimestamp(),
   });
@@ -49,4 +48,14 @@ export async function signIn(email, password) {
 }
 export async function logOut() {
   await signOut(auth);
+}
+
+export async function getDisplayName(userID) {
+  const userRef = doc(db, "users", userID);
+  const userSnapshot = await getDoc(userRef);
+
+  if (userSnapshot.exists()) {
+    return userSnapshot.data().displayName;
+  }
+
 }
