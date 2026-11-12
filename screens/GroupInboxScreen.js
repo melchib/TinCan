@@ -4,10 +4,16 @@ import { useEffect, useState } from 'react';
 import { loadMessages } from '../services/messageService';
 import { FlatList } from 'react-native';
 import { getDisplayName } from '../services/userService';
+import { useWindowDimensions } from 'react-native';
 
 export default function GroupInboxScreen({ navigation, route }) {
     const { groupID, groupName, groupMembers } = route.params;
     const [messages, setMessages] = useState([]);
+    const { width } = useWindowDimensions();
+    const cardWidth = 330;
+    const cardMargin = 8;
+
+    const sidePadding = (width - cardWidth - cardMargin * 2) /2;
     
     useEffect(() => {
         async function fetchMessages() {
@@ -34,11 +40,27 @@ export default function GroupInboxScreen({ navigation, route }) {
                 keyExtractor={(item) => item.id}
                 horizontal
                 inverted
+                snapToInterval={346}
+                snapToAlignment='start'
+                decelerationRate='fast'
+                contentContainerStyle={{
+                    paddingHorizontal: Math.max(0, sidePadding)
+                }}
                 renderItem={({ item }) => (
                     <View style={styles.messageCard}>
-                        <Text>{item.displayName}</Text>
-                        <Text>{item.duration}s</Text>
-                        <Text>{item.dateSent}</Text>
+                        <View style={styles.profilePhotoSpot}>
+                            <Text style={{fontSize: 40}}> M </Text>
+                        </View>
+                        <View style={styles.playButtonBg}>
+                            <TouchableOpacity 
+                                style={styles.playIcon}
+                                onPress={() => playRecording(item.audioURL, item.ID)}
+                            />
+                        
+                        </View>
+                        <Text style = {styles.lengthText}>{item.duration}s</Text>
+                        <Text style = {styles.name}>{item.displayName}</Text>
+                        <Text style = {styles.dateText}>{item.dateSent}</Text>
                         <Text>{item.timeSent}</Text>
                     </View>
                 )}
@@ -72,7 +94,6 @@ export default function GroupInboxScreen({ navigation, route }) {
         backgroundColor: '#f8f4ee',
         top: 200,
         width: 330,
-        right: 10,
         height: 400,
         borderRadius: 100,
         alignItems: 'center',
@@ -84,12 +105,61 @@ export default function GroupInboxScreen({ navigation, route }) {
     addButton: {
         height: 75,
         width: 75,
-        backgroundColor: 'yellow',
+        backgroundColor: '#ffd979',
         borderRadius: 40,
         alignItems: 'center',
         justifyContent: 'center',
         alignSelf: 'flex-end',
         right: 35,
         bottom: 60
-    }
+    },
+    name: {
+        fontFamily: 'Inter',
+        color: '#fb6058',
+        fontSize: 30,
+        fontWeight: 'bold'
+    },
+    lengthText: {
+        fontFamily: 'Inter',
+        color: '#810100',
+        fontSize: 15,
+        fontWeight: '400'
+    },
+    dateText: {
+        fontFamily: 'Inter',
+        color: '#625f5f',
+        fontSize: 18,
+        fontWeight: '900'
+    },
+    playButtonBg: {
+        backgroundColor: 'white',
+        top: -10,
+        width: 100,
+        height: 100,
+        borderRadius: 70,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#b82d2d'
+  },
+playIcon: {
+    width: 0,
+    height: 0,
+    borderTopWidth: 20,
+    borderBottomWidth: 20,
+    borderLeftWidth: 30,
+    borderTopColor: 'transparent',
+    borderBottomColor: 'transparent',
+    borderLeftColor: 'white',
+    marginLeft: 5,
+  },
+  profilePhotoSpot: {
+    top: -25,
+    height: 80,
+    width: 80,
+    backgroundColor: '#ffd979',
+    borderRadius: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+
+  }
     });

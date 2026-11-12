@@ -13,7 +13,9 @@ import { createUser, getDisplayName } from './userService';
     const senderID = await createUser();
 
     const time = new Date();
-    const timeSent = time.toLocaleTimeString();
+    const timeSent = time.toLocaleTimeString('en-us', {
+      hour: 'numeric', minute: '2-digit'
+    });
     const dateSent = time.toLocaleDateString();
     
     const messageRef = doc(collection(db, "Groups", groupID, "messages")) ;
@@ -36,15 +38,15 @@ import { createUser, getDisplayName } from './userService';
 
 
     try{
-    await setDoc(messageRef, {
-      audioURL: audioURL,
-      duration: duration,
-      groupID: groupID,
-      senderID: senderID,
-      timeSent: timeSent,
-      dateSent: dateSent,
-      createdAt: serverTimestamp()
-    });
+      await setDoc(messageRef, {
+        audioURL: audioURL,
+        duration: duration,
+        groupID: groupID,
+        senderID: senderID,
+        timeSent: timeSent,
+        dateSent: dateSent,
+        createdAt: serverTimestamp()
+      });
     
     console.log("firestore write successful");
 
