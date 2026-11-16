@@ -7,51 +7,20 @@ import { writeMessage,loadMessages, } from '../services/messageService';
 export default function TestScreen() {
   const [recordingUri, setRecordingUri] = useState(null);
   const [isRecording, setIsRecording] = useState(false);
-  const [playingMessageID, setPlayingMessageID] = useState(null);
   const [duration, setDuration] = useState(0);
+  const [playingMessageID, setPlayingMessageID] = useState(null);
   const [messages, setMessages] = useState([]);
 
   //HARDCODED GROUP AND SENDER VALUES
   const groupID = "group0001";
 
-  const recorder = useAudioRecorder({
-  ...RecordingPresets.HIGH_QUALITY,
-  directory: 'document',
-  });
 
   const player = useAudioPlayer(null);
   // const status = useAudioPlayerStatus(player);
   
-  async function startRecording() {
-    await AudioModule.requestRecordingPermissionsAsync();
-    await AudioModule.setAudioModeAsync({ allowsRecording: true, playsInSilentMode: true });
-    
-    await recorder.prepareToRecordAsync();
-    recorder.record();
-    setIsRecording(true);
-  }
-
-  async function stopRecording() {
-    const duration = Math.round(recorder.currentTime);
-    
-    await recorder.stop();
-    console.log("Recording duration:", duration);
-    setDuration(duration);
-    
-    // const recordingStatus = recorder.getStatus();
-
-    const src = recorder.uri;
-    if (!src) {
-      console.log('No recording URI available');
-      return; //t
-    };
   
-    setRecordingUri(src);
-    player.replace({ uri: src });
-    setIsRecording(false);
 
-    
-  }
+
 
   async function  playRecording(recordingUri, messageID) {
     setPlayingMessageID(messageID);

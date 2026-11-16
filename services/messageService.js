@@ -4,30 +4,37 @@ import { collection, doc, setDoc, getDocs, query,
 import { ref, uploadBytes, getDownloadURL,} from 'firebase/storage';
 import {db, storage } from '../firebaseConfig';
 import { createUser, getDisplayName } from './userService';
+import { auth } from '../firebaseConfig';
 
   export async function writeMessage(recordingUri, groupID, duration) {
     if (!recordingUri) {
         throw new Error('No recording available to send.');
     }
     
-    const senderID = await createUser();
+    const senderID = auth.currentUser?.uid;
 
-    const time = new Date();
-    const timeSent = time.toLocaleTimeString('en-us', {
-      hour: 'numeric', minute: '2-digit'
-    });
-    const dateSent = time.toLocaleDateString();
-    
-    const messageRef = doc(collection(db, "Groups", groupID, "messages")) ;
-    const messageID = messageRef.id;
-    
-    const storagePath = `voice-messages/${groupID}/${messageID}.m4a`;
-    const audioRef = ref(storage, storagePath);
+    if (!senderID) {
+      throw new Error('User must be signed in to send a message.');
+    }
 
-    const response = await fetch(recordingUri);
-    const blob = await response.blob();
+    try{
+      const time = new Date();
+      const timeSent = time.toLocaleTimeString('en-us', {
+        hour: 'numeric', minute: '2-digit'
+      });
+      const dateSent = time.toLocaleDateString();
     
-    await uploadBytes(audioRef, blob, {
+      const messageRef = doc(collection(db, "Groups", groupID, "messages")) ;
+      const messageID = messageRef.id;
+    
+      const storagePath = `voice-messages/${groupID}/${messageID}.m4a`;
+      const audioRef = ref(storage, storagePath);
+
+      const response = await fetch(recordingUri);
+      const blob = await response.blob();
+
+    
+      await uploadBytes(audioRef, blob, {
       contentType: "audio/mp4",
     });
     
@@ -36,8 +43,6 @@ import { createUser, getDisplayName } from './userService';
     console.log("audio uploaded, about to write to firestore...");
     console.log("Document path:", messageRef.path);
 
-
-    try{
       await setDoc(messageRef, {
         audioURL: audioURL,
         duration: duration,
@@ -54,6 +59,7 @@ import { createUser, getDisplayName } from './userService';
 
   } catch(error) {
     console.error("Firestore error:", error.code, error.message);
+    throw error;
   }
 }
 

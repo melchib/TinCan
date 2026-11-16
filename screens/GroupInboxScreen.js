@@ -1,13 +1,16 @@
 import { StyleSheet, Text, View, TouchableOpacity, TextInput } from 'react-native';
 import { Image } from 'react-native';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { loadMessages } from '../services/messageService';
 import { FlatList } from 'react-native';
 import { getDisplayName } from '../services/userService';
 import { useWindowDimensions } from 'react-native';
+import usePlayback from '../components/usePlayback';
+import { useFocusEffect } from '@react-navigation/native';
 
 export default function GroupInboxScreen({ navigation, route }) {
     const { groupID, groupName, groupMembers } = route.params;
+    const { playRecording, stopPlayback, isPlaying, playingUri } = usePlayback();
     const [messages, setMessages] = useState([]);
     const { width } = useWindowDimensions();
     const cardWidth = 330;
@@ -15,18 +18,20 @@ export default function GroupInboxScreen({ navigation, route }) {
 
     const sidePadding = (width - cardWidth - cardMargin * 2) /2;
     
-    useEffect(() => {
-        async function fetchMessages() {
-            try {
-                const groupMessages = await loadMessages(groupID);
-                setMessages(groupMessages);
-            } catch (error) {
-                console.error("error loading messages", error);
+    useFocusEffect(
+        useCallback(() => {
+            async function fetchMessages() {
+                try {
+                    const groupMessages = await loadMessages(groupID);
+                    setMessages(groupMessages);
+                } catch (error) {
+                    console.error("error loading messages", error);
+                }
             }
-        }
 
-        fetchMessages();
-    }, [groupID]);
+            fetchMessages();
+        }, [groupID])
+    );
 
 
     return (
@@ -52,10 +57,15 @@ export default function GroupInboxScreen({ navigation, route }) {
                             <Text style={{fontSize: 40}}> M </Text>
                         </View>
                         <View style={styles.playButtonBg}>
-                            <TouchableOpacity 
-                                style={styles.playIcon}
-                                onPress={() => playRecording(item.audioURL, item.ID)}
-                            />
+                        <TouchableOpacity
+                            onPress={() => playRecording(item.audioURL)}
+                        >
+                            {isPlaying && playingUri === item.audioURL ? (
+                            <View style={styles.pauseSymbol} />
+                            ) : (
+                            <View style={styles.playIcon} />
+                            )}
+                        </TouchableOpacity>
                         
                         </View>
                         <Text style = {styles.lengthText}>{item.duration}s</Text>
@@ -148,13 +158,13 @@ export default function GroupInboxScreen({ navigation, route }) {
 playIcon: {
     width: 0,
     height: 0,
-    borderTopWidth: 20,
-    borderBottomWidth: 20,
-    borderLeftWidth: 30,
+    borderTopWidth: 25,
+    borderBottomWidth: 25,
+    borderLeftWidth: 35,
     borderTopColor: 'transparent',
     borderBottomColor: 'transparent',
     borderLeftColor: 'white',
-    marginLeft: 5,
+    marginLeft: 12,
   },
   profilePhotoSpot: {
     top: -25,
@@ -165,5 +175,12 @@ playIcon: {
     alignItems: 'center',
     justifyContent: 'center',
 
-  }
+  },
+  pauseSymbol: {
+    width: 40,
+    height: 55,
+    borderLeftWidth: 13,
+    borderRightWidth: 13,
+    borderColor: 'white',
+},
     });
