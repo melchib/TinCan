@@ -74,12 +74,13 @@ export default function RecordMemoScreen({ navigation, route }){
             </Text>
 
             <View style={styles.btnRow}>
-                <TouchableOpacity
+                {/* <TouchableOpacity
                     onPress={pauseRecording}
                     style={styles.pauseBtn}
                 >
                     <Text>Pause</Text>
-                </TouchableOpacity>
+                </TouchableOpacity> */}
+
 
                 <TouchableOpacity onPress={stopRecording}>
                     <Image
@@ -217,8 +218,8 @@ export default function RecordMemoScreen({ navigation, route }){
         gap: 20,
     },
     stopImage: {
-        width: 90,
-        height: 90,
+        width: 130,
+        height: 130,
     },
     confirmationScreen: {
     ...StyleSheet.absoluteFillObject,

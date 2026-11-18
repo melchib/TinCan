@@ -43,6 +43,29 @@ import { auth } from '../firebaseConfig';
     console.log("audio uploaded, about to write to firestore...");
     console.log("Document path:", messageRef.path);
 
+    console.log("Message data:", (
+      audioURL,
+      duration,
+      groupID,
+      senderID,
+      timeSent,
+      dateSent
+    ));
+
+    console.log("Authenticated UID:", auth.currentUser?.uid);
+
+    console.log("Firestore message validation:", {
+      senderID,
+      authenticatedUID: auth.currentUser?.uid,
+      senderMatchesAuth: senderID === auth.currentUser?.uid,
+      groupID,
+      duration,
+      durationType: typeof duration,
+      audioURLType: typeof audioURL,
+      timeSent,
+      dateSent
+    });
+
       await setDoc(messageRef, {
         audioURL: audioURL,
         duration: duration,
