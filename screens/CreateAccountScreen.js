@@ -42,9 +42,9 @@ export default function CreateAccountScreen({ navigation }) {
 
       await signUp(displayName, email, password);
       setSuccessMessage('Account successfully created, redirecting to sign in...');
-      setTimeout(() => {
-        navigation.replace('SignIn');
-      }, 2000)
+      // setTimeout(() => {
+      //   navigation.replace('SignIn');
+      // }, 2000)
 
     } catch (error) {
       if (error.code === 'auth/email-already-in-use') {

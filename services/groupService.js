@@ -2,6 +2,8 @@
 import { db } from '../firebaseConfig';
 import { doc, getDoc, query, collection, where, getDocs, setDoc, updateDoc, arrayUnion, serverTimestamp } from 'firebase/firestore';
 import { auth } from '../firebaseConfig';
+import { getAvailableColor } from '../icons/profileColors';
+import { runTransaction } from 'firebase/firestore';
 
 export async function getUserGroups(){
     const userID = auth.currentUser.uid;
@@ -12,12 +14,6 @@ export async function getUserGroups(){
         where('members', 'array-contains', userID)
     );
 
-    // console.log("Current auth UID:", auth.currentUser?.uid);
-    // console.log("Query userID:", userID);
-    // console.log(
-    // "UIDs match:",
-    // auth.currentUser?.uid === userID
-    // );
     const snapshot = await getDocs(groupsQuery);
    
 
@@ -34,21 +30,8 @@ export async function writeNewGroup(currentUser, groupName, inviteCode){
     const dateCreated = serverTimestamp();
     const groupRef = doc(collection(db, "Groups"));
     const groupID = groupRef.id;
+    const creatorColor = getAvailableColor();
 
-    // console.log("Authenticated UID:", auth.currentUser?.uid);
-    // console.log("currentUser argument:", currentUser);
-    // console.log("UIDs match:", currentUser === auth.currentUser?.uid);
-
-    // console.log("Group name:", groupName);
-    // console.log("Group name length:", groupName?.length);
-
-    // console.log("Invite code:", inviteCode);
-    // console.log("Invite code length:", inviteCode?.length);
-
-    // console.log(
-    // "Invite code valid:",
-    // /^[A-HJ-NP-Z2-9]{8}$/.test(inviteCode)
-    // );
     try{
         await setDoc( groupRef, {
             createdBy: currentUser,
@@ -56,6 +39,9 @@ export async function writeNewGroup(currentUser, groupName, inviteCode){
             dateCreated: dateCreated,
             inviteCode: inviteCode,
             members: [currentUser],
+            memberColors: {
+                [currentUser]: creatorColor
+            }
         });
         // console.log("group creation successful");
 
@@ -67,33 +53,48 @@ export async function writeNewGroup(currentUser, groupName, inviteCode){
 }
 
 export async function joinGroup(joinCode) {
-    const  q = query(
-        collection(db, "Groups"),
-        where("inviteCode", "==", joinCode.trim().toUpperCase())
+    const currentUser = auth.currentUser?.uid;
+
+    if (!currentUser) {
+        throw new Error('User must be signed in.');
+    }
+
+    const q = query(
+        collection(db, 'Groups'),
+        where('inviteCode', '==', joinCode.trim().toUpperCase())
     );
 
     const snapshot = await getDocs(q);
-    
-    if (snapshot.empty){
-        return "invalidCode";
+
+    if (snapshot.empty) {
+        return 'invalidCode';
     }
 
-    const groupDoc = snapshot.docs[0];
-    const groupID = groupDoc.id;
+    const groupRef = snapshot.docs[0].ref;
 
-    const groupData = groupDoc.data();
-    const currentUser = auth.currentUser.uid;
+    return await runTransaction(db, async (transaction) => {
+        const groupDoc = await transaction.get(groupRef);
 
-    if (groupData.members.includes(currentUser)){
-        return "alreadyMember";
-    }
+        if (!groupDoc.exists()) {
+            return 'invalidCode';
+        }
 
-    const groupRef = doc(db, "Groups", groupID);
+        const groupData = groupDoc.data();
 
-    await updateDoc(groupRef, {
-        members: arrayUnion(currentUser)
+        if (groupData.members.includes(currentUser)) {
+            return 'alreadyMember';
+        }
+
+        const memberColors = groupData.memberColors || {};
+        const memberColor = getAvailableColor(memberColors);
+
+        transaction.update(groupRef, {
+            members: arrayUnion(currentUser),
+            [`memberColors.${currentUser}`]: memberColor
+        });
+
+        return 'success';
     });
-    return "success";
 }
 
 export  function generateInviteCode() {
@@ -106,4 +107,15 @@ export  function generateInviteCode() {
     }
     // console.log(inviteCode)
     return inviteCode;
+}
+
+export async function getGroupColors(groupID) {
+    const groupRef = doc(db, 'Groups', groupID);
+    const groupDoc = await getDoc(groupRef);
+
+    if (!groupDoc.exists()) {
+        throw new Error("Group not found");
+    }
+
+    return groupDoc.data().memberColors || {};
 }

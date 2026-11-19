@@ -1,5 +1,10 @@
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import {useState, useEffect} from 'react';
+import { ActivityIndicator, View } from "react-native";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from './firebaseConfig';
+
 import CreateGroupScreen from "./screens/CreateGroupScreen";
 import TestScreen from "./screens/TestScreen";
 import LandingScreen from "./screens/LandingScreen";
@@ -14,24 +19,51 @@ import RecordMemoScreen from "./screens/RecordMemoScreen";
 const Stack = createNativeStackNavigator();
 
 export default function App() {
+  const [user, setUser] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+      setAuthLoading(false);
+    });
+
+    return unsubscribe;
+  }, []);
+
+  if (authLoading) {
+    return (
+      <View style={{
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center'
+      }}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
   return (
-    // <TestScreen/>
-  // );
     <NavigationContainer>
       <Stack.Navigator
-        initialRouteName="Landing"
+        // initialRouteName="Landing"
         screenOptions={{ headerShown: false }}
       >
-  
+        {user ? (
+          <>
+          <Stack.Screen name="HomeScreen" component={HomeScreen} />
+          <Stack.Screen name="CreateGroup" component={CreateGroupScreen} />
+          <Stack.Screen name="JoinGroup" component={JoinGroupScreen} />
+          <Stack.Screen name="GroupInbox" component={GroupInboxScreen} />
+          <Stack.Screen name="TestScreen" component={TestScreen} />
+          <Stack.Screen name="RecordScreen" component={RecordMemoScreen} />
+          </>  
+        ) : (
+          <>
         <Stack.Screen name="Landing" component={LandingScreen} />
         <Stack.Screen name="SignIn" component={SignInScreen} />
         <Stack.Screen name="CreateAccount" component={CreateAccountScreen} />
-        <Stack.Screen name="HomeScreen" component={HomeScreen} />
-        <Stack.Screen name="CreateGroup" component={CreateGroupScreen} />
-        <Stack.Screen name="JoinGroup" component={JoinGroupScreen} />
-        <Stack.Screen name="GroupInbox" component={GroupInboxScreen} />
-        <Stack.Screen name="TestScreen" component={TestScreen} />
-        <Stack.Screen name="RecordScreen" component={RecordMemoScreen} />
+          </>
+        )} 
       </Stack.Navigator>
     </NavigationContainer>
   );

@@ -7,6 +7,7 @@ import { auth } from '../firebaseConfig';
 import { getUserGroups } from '../services/groupService';
 import { useFocusEffect } from '@react-navigation/native';
 import { useCallback } from 'react';
+import { logOut } from '../services/userService';
 
 
 export default function HomeScreen({ navigation }) {
@@ -14,6 +15,7 @@ export default function HomeScreen({ navigation }) {
     const [isLoading, setIsLoading] = useState(true);
     const [errorMessage, setErrorMessage] = useState('');
     const [isVisible, setIsVisible] = useState(false);
+    const [userSettingIsVisible, setUserSettingIsVisible] = useState(false);
 
     useFocusEffect(
         useCallback(() => {
@@ -41,6 +43,20 @@ export default function HomeScreen({ navigation }) {
             setIsVisible(true);
         }
     }
+
+    function handleSettingsPress() {
+        setUserSettingIsVisible(!userSettingIsVisible);
+    }
+
+    async function handleLogout(){
+        try{ 
+            await logOut();
+            console.log("user logged out")
+        } catch (error) {
+            console.log('Logout error:', error)
+        }
+    }
+
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, async (user) => {
             if (!user){
@@ -53,9 +69,6 @@ export default function HomeScreen({ navigation }) {
                 setErrorMessage('');
 
                 const userGroups = await getUserGroups(user.uid);
-
-                // console.log('Logged-in UID:', user.uid);
-                // console.log('Groups returned from Firebase:', userGroups);
 
                 setGroups(userGroups);
             } catch (error) {
@@ -70,6 +83,27 @@ export default function HomeScreen({ navigation }) {
     
     return(
         <View style={styles.container}>
+
+            <View style={styles.settingsContainer}>
+
+                {userSettingIsVisible && (
+                    <View style={styles.settingsMenu}>
+                        <TouchableOpacity
+                            style={styles.settingsMenuButton}
+                            onPress={handleLogout}
+                            >
+                                <Text style={styles.btnText}>Log out</Text>
+                            </TouchableOpacity>
+                    </View>
+                )}
+
+                <TouchableOpacity
+                    style={styles.settingsButton}
+                    onPress={handleSettingsPress}
+                    >
+                    <Text style={{ fontSize: 30, color: '#743f43' }}>...</Text>
+                </TouchableOpacity>
+            </View>
             <View style={styles.logoSection}>
                 <LinearGradient
                 colors={['#f7eaea', '#f97c75']}
@@ -80,7 +114,8 @@ export default function HomeScreen({ navigation }) {
                     style={{ left: 15, top:-40, width: 250, height: 250 }}
                     resizeMode="contain"
                 />
-
+                
+        
                     <View style={styles.spotlight}>
 
                     {/* Header text */}
@@ -244,5 +279,42 @@ btnText: {
     color:'white',
     fontWeight:'bold',
     fontSize: 15
-}
+},
+settingsContainer: {
+    position: 'absolute',
+    top: 60,
+    left: 20,
+    zIndex: 1000,
+    elevation: 10,
+},
+
+settingsButton: {
+    backgroundColor: 'white',
+    width: 45,
+    height: 45,
+    borderRadius: 25,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 300,
+},
+
+settingsMenu: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: 220,
+    backgroundColor: '#ffffff',
+    borderRadius: 25,
+    padding: 15,
+    paddingTop: 60,
+    zIndex: 200,
+},
+
+settingsMenuButton: {
+    backgroundColor: '#ec6b6b',
+    paddingVertical: 15,
+    paddingHorizontal: 8,
+    borderRadius: 20,
+    alignItems: 'center',
+},
 });

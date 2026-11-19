@@ -23,9 +23,9 @@ export default function SignInScreen({ navigation }) {
 
     await signIn(email, password);
 
-    setTimeout(() => {
-      navigation.replace('HomeScreen');
-    }, 2000);
+    // setTimeout(() => {
+    //   navigation.replace('HomeScreen');
+    // }, 2000);
 
   } catch (error) {
     console.log('Sign in error:', error.code);

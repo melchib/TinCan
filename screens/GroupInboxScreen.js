@@ -1,5 +1,4 @@
 import { StyleSheet, Text, View, TouchableOpacity, TextInput } from 'react-native';
-import { Image } from 'react-native';
 import { useCallback, useEffect, useState } from 'react';
 import { loadMessages } from '../services/messageService';
 import { FlatList } from 'react-native';
@@ -7,11 +6,15 @@ import { getDisplayName } from '../services/userService';
 import { useWindowDimensions } from 'react-native';
 import usePlayback from '../components/usePlayback';
 import { useFocusEffect } from '@react-navigation/native';
+import ProfileIcon from '../components/ProfileIcon';
+import { getGroupColors } from '../services/groupService';
+
 
 export default function GroupInboxScreen({ navigation, route }) {
     const { groupID, groupName, groupMembers } = route.params;
     const { playRecording, stopPlayback, isPlaying, playingUri } = usePlayback();
     const [messages, setMessages] = useState([]);
+    const [memberColors, setMemberColors] = useState({});
     const { width } = useWindowDimensions();
     const cardWidth = 330;
     const cardMargin = 8;
@@ -20,16 +23,29 @@ export default function GroupInboxScreen({ navigation, route }) {
     
     useFocusEffect(
         useCallback(() => {
-            async function fetchMessages() {
+            let active = true;
+
+            async function fetchGroupData() {
                 try {
-                    const groupMessages = await loadMessages(groupID);
-                    setMessages(groupMessages);
+                    const [groupMessages, groupColors] = await Promise.all([
+                        loadMessages(groupID),
+                        getGroupColors(groupID)
+                    ]);
+
+                    if (active) {
+                        setMessages(groupMessages);
+                        setMemberColors(groupColors);
+                    }
                 } catch (error) {
-                    console.error("error loading messages", error);
+                    console.error("Error loading group data:", error);
                 }
             }
 
-            fetchMessages();
+            fetchGroupData();
+            
+            return () => {
+                active = false;
+            };
         }, [groupID])
     );
 
@@ -54,7 +70,11 @@ export default function GroupInboxScreen({ navigation, route }) {
                 renderItem={({ item }) => (
                     <View style={styles.messageCard}>
                         <View style={styles.profilePhotoSpot}>
-                            <Text style={{fontSize: 40}}> M </Text>
+                            <ProfileIcon
+                                displayName={item.displayName}
+                                color={memberColors[item.senderID]}
+                                size={80}
+                            />
                         </View>
                         <View style={styles.playButtonBg}>
                         <TouchableOpacity
@@ -168,13 +188,7 @@ playIcon: {
   },
   profilePhotoSpot: {
     top: -25,
-    height: 80,
-    width: 80,
-    backgroundColor: '#ffd979',
-    borderRadius: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
-
+  
   },
   pauseSymbol: {
     width: 40,
