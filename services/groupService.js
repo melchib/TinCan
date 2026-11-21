@@ -100,12 +100,26 @@ export async function joinGroup(joinCode) {
 export  function generateInviteCode() {
     const array = ['A','B','C','D','E','F','G','H','J','K','L','M','N','P',
         'Q','R','S','T','U','V','W','X','Y','Z',2,3,4,5,6,7,8,9];
-    let inviteCode = '';
-    for (let i = 0; i < 8; i++){
-        const random = Math.floor(Math.random() * array.length);
-        inviteCode += array[random];
-    }
-    // console.log(inviteCode)
+    
+        let exists;
+        
+        do {
+            let inviteCode = '';
+            for (let i = 0; i < 8; i++){
+                const random = Math.floor(Math.random() * array.length);
+                inviteCode += array[random];
+        }
+        
+        const q = query(
+            collection(db, 'Groups'),
+            where('inviteCode', '==', inviteCode)
+        );
+
+        const snapshot = await getDocs(q);
+
+        exists = !snapshot.empty;
+    } while (exists);
+
     return inviteCode;
 }
 
@@ -119,3 +133,4 @@ export async function getGroupColors(groupID) {
 
     return groupDoc.data().memberColors || {};
 }
+

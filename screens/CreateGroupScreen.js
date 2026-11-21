@@ -23,7 +23,7 @@ export default function CreateGroupScreen( {navigation} ) {
 
     async function handleGroupCreate() {
       try{
-        const code = generateInviteCode();
+        const code = await generateInviteCode();
         const groupID = await writeNewGroup(userID, groupName, code )
         if (!groupID) {
           Alert.alert("Error", "Unable to create group");
