@@ -97,7 +97,7 @@ export async function joinGroup(joinCode) {
     });
 }
 
-export  function generateInviteCode() {
+export async function generateInviteCode() {
     const array = ['A','B','C','D','E','F','G','H','J','K','L','M','N','P',
         'Q','R','S','T','U','V','W','X','Y','Z',2,3,4,5,6,7,8,9];
     
@@ -133,4 +133,68 @@ export async function getGroupColors(groupID) {
 
     return groupDoc.data().memberColors || {};
 }
+
+export async function getGroupData(groupID) {
+    const groupRef = doc(db, 'Groups', groupID);
+
+    const snapshot = await getDoc(groupRef);
+
+    if (!snapshot.exists()) {
+        throw new Error('Group not found');
+    }
+    return {
+        id: snapshot.id,
+        ...snapshot.data()
+    };
+}
+
+export async function renameGroup(groupID, newName) {
+    const name = newName.trim();
+
+    if(!name) {
+        throw new Error('Group name cannot be empty!');
+    }
+    
+    const groupRef = doc(db, 'Groups', groupID);
+
+    await updateDoc(groupRef, {
+        groupName: name
+    });
+}
+
+export async function leaveGroup(groupID) {
+    const currentUser = auth.currentUser?.uid;
+
+    if (!currentUser) {
+        throw new Error("User must be signed in")
+    }
+
+    const groupRef = doc(db, 'Groups', groupID);
+
+    await runTransaction(db, async (transaction) => {
+        const snapshot = await transaction.get(groupRef);
+
+        if (!snapshot.exists()) {
+            throw new Error('Group not found');
+        }
+
+        const groupData = snapshot.data();
+
+        const updatedMembers = groupData.members.filter(
+            id => id !== currentUser
+        );
+
+        const updatedColors = {
+            ...(groupData.memberColors || {})
+        };
+
+        delete updatedColors[currentUser];
+
+        transaction.update(groupRef, {
+            members: updatedMembers,
+            memberColors: updatedColors
+        });
+    });
+}
+
 

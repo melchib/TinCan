@@ -8,6 +8,8 @@ import usePlayback from '../components/usePlayback';
 import { useFocusEffect } from '@react-navigation/native';
 import ProfileIcon from '../components/ProfileIcon';
 import { getGroupColors } from '../services/groupService';
+import Octicons from '@expo/vector-icons/Octicons';
+import { MaterialIcons } from '@expo/vector-icons';
 
 
 export default function GroupInboxScreen({ navigation, route }) {
@@ -52,6 +54,11 @@ export default function GroupInboxScreen({ navigation, route }) {
 
     return (
         <View style={styles.container}>
+            <TouchableOpacity 
+            style={styles.settingsButton}
+            onPress={() => navigation.navigate('GroupSettings', {groupID})}>
+                <MaterialIcons name="settings" size={24} color="#3c78d8ff" />
+            </TouchableOpacity>
             <Text style={styles.title}>
                 {groupName}
             </Text>
@@ -102,12 +109,19 @@ export default function GroupInboxScreen({ navigation, route }) {
                         groupName,
                         groupMembers
                     })}>
-                    <Text style={{fontSize: 40}}>
+                    <Text style={{fontSize: 50, color:"#743f43"}}>
                         +
                     </Text>
                 </TouchableOpacity>
             </View>
+            <View style={styles.backButton}>
+                <TouchableOpacity
+                    onPress={() => navigation.goBack()}>
+                     <Octicons name="arrow-left" size={32} color="#743f43" />
+                </TouchableOpacity>
+            </View>
         </View>
+        
     )}
     const styles= StyleSheet.create({
     container: {
@@ -121,12 +135,12 @@ export default function GroupInboxScreen({ navigation, route }) {
         fontWeight: 'bold',
         textAlign: 'center',
         fontSize: 35,
-        top: 90,
+        top: 120,
         color: 'white'
     },
     messageCard: {
         backgroundColor: '#f8f4ee',
-        top: 200,
+        top: 170,
         width: 330,
         height: 400,
         borderRadius: 100,
@@ -137,10 +151,10 @@ export default function GroupInboxScreen({ navigation, route }) {
         gap: 5
     },
     addButton: {
-        height: 75,
-        width: 75,
+        height: 85,
+        width: 85,
         backgroundColor: '#ffd979',
-        borderRadius: 40,
+        borderRadius: 45,
         alignItems: 'center',
         justifyContent: 'center',
         alignSelf: 'flex-end',
@@ -196,5 +210,28 @@ playIcon: {
     borderLeftWidth: 13,
     borderRightWidth: 13,
     borderColor: 'white',
+},
+    settingsButton: {
+    backgroundColor: 'white',
+    width: 45,
+    height: 45,
+    borderRadius: 25,
+    alignItems: 'center',
+    justifyContent: 'center',
+    right: 150,
+    zIndex: 300,
+    top: 70
+},
+backButton: {
+    position: 'absolute',
+    bottom: 65,
+    left: 30,
+    height: 60,
+    width: 60,
+    backgroundColor: '#fb6058',
+    borderRadius: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 300
 },
     });
